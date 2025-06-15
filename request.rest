@@ -1,0 +1,9 @@
+### Validation
+POST http://localhost:8848/register
+Content-Type: application/json
+
+{
+    "email" : "gaurab@gmail.com",
+    "password" : "haf",
+    "username" : "gaurab7"
+}
