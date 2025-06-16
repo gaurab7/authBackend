@@ -3,23 +3,29 @@ import validator from 'validator'
 
 
 export function reqValidator(req, res, next) {
-    const { email, password, username } = req.body
-    if(!validator.isEmail(email))//validator built-in function complies with RMC smth email format
-    {
-        return res.status(400).json({ error: "Invalid email format" })
-    }
-    else if(validator.isEmpty(email) || validator.isEmpty(password) || validator.isEmpty(username)) {
-        return res.status(400).json({error : "You must input all fields"})
+    try{
+        const { email, password, username } = req.body
+        if(!validator.isEmail(email))//validator built-in function complies with RMC smth email format
+         {
+              return res.status(400).json({ error: "Invalid email format" })
+         }
+        else if(validator.isEmpty(email) || validator.isEmpty(password) || validator.isEmpty(username)) {
+             return res.status(400).json({error : "You must input all fields"})
+ 
+         }
+         else if(!validator.isStrongPassword(password))
+         {
+               return res.status(400).json({error : "Use a stronger password"})
+         }
+         else{
+              console.log('Request Verified')
+              next()
+             }
 
-    }
-    else if(!validator.isStrongPassword(password))
-    {
-        return res.status(400).json({error : "Use a stronger password"})
-    }
-    else{
-        console.log('Request Verified')
-        next()
-    }
+        }catch(err) {
+            return res.status(400).json({error: err})
+        }
+    
 }
 
 
