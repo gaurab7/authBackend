@@ -4,7 +4,7 @@ import { jest } from '@jest/globals'
 
 describe('Request Verification', ()=> {
     it('should call next if request is valid', ()=>{
-        const req = { body: {"email" : "gaurab@gmail.com", "password" : "haf","username" : "gaurab7" } }
+        const req = { body: {"email" : "gaurab@gmail.com", "password" : "G@urav9861","username" : "gaurab7" } }
         const res = {}
         const next = jest.fn()
         reqValidator(req, res, next)
