@@ -12,6 +12,10 @@ export function reqValidator(req, res, next) {
         return res.status(400).json({error : "You must input all fields"})
 
     }
+    else if(!validator.isStrongPassword(password))
+    {
+        return res.status(400).json({error : "Use a stronger password"})
+    }
     else{
         console.log('Request Verified')
         next()
