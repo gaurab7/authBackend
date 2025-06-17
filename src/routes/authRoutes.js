@@ -1,11 +1,11 @@
 import express from 'express'
 import { reqValidator } from '../middleware/ authValidator.js'
-import {test} from '../controllers/authController.js'
+import { regCredVerification } from '../controllers/authController.js'
 
 const router = express.Router()
 
 //registration
-router.post('/register', reqValidator, test)
+router.post('/register', reqValidator, regCredVerification)
 
 //login
 router.post('/login', (req, res)=>{

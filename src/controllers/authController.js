@@ -12,19 +12,19 @@ export async function regCredVerification(req, res) {
         const { email, password, username} = req.body
          if(await prisma.user.findUnique( {where: { email : email }}))
              {
-                    return res.status(400).json({ error: "Email already in use!"})
+                    return res.status(409).json({ error: "Email already in use!"})
                   }
          else if(await prisma.user.findFirst( { where: { username: username}})){
-                     return res.status(400).json({ error: "Username already in use!"})
+                     return res.status(409).json({ error: "Username already in use!"})
                   }
          else{
-                      await registration(email, password, username)
-                      return res.status(200).json({ credentials_verified: "call services next"})
+                      const token = await registration(email, password, username)
+                      return res.status(200).json({ token })
                   }
 
     } catch(err) {
         console.log(err)
-        return res.status(400).json({ error: err})
+        return res.status(500).json({ error: "Internal Server Error"})
     }
     
 }

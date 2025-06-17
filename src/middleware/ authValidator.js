@@ -23,7 +23,8 @@ export function reqValidator(req, res, next) {
              }
 
         }catch(err) {
-            return res.status(400).json({error: err})
+            console.log(err)
+            return res.status(500).json({ error: "Internal Server Error"})
         }
     
 }
