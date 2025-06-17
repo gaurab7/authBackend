@@ -32,12 +32,13 @@ export async function regCredVerification(req, res) {
 export async function logCredVerification(req, res) {
     try{
         const { email, password, username} = req.body
-        const user = await prisma.user.findFirst({where: { AND: [{ email , username }]}})//finds the user with the given email and  username and returns all info
+        //separate {email} and {username } like this or it caues logical errors as OR needs conditions to be separated. 
+        const user = await prisma.user.findFirst({where: { OR: [{ email }, { username }]}})//finds the user with the given email and  username and returns all info
         if(user){ 
             const log_token = await login(user, password)
             return res.status(200).json({ log_token })
         }
-        else if(!user){
+        else {
             return res.status(404).json({error: "User Does Not Exist "})
         }
     }catch(err){
