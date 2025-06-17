@@ -3,9 +3,9 @@ POST http://localhost:8848/register
 Content-Type: application/json
 
 {
-    "email" : "sam44@gmail.com",
+    "email" : "Messi@gmail.com",
     "password" : "Sam2333@4j",
-    "username" : "sam44"
+    "username" : "Messi"
 }
 
 ###LOGIN
@@ -13,7 +13,11 @@ POST http://localhost:8848/login
 Content-Type: application/json
 
 {
-    "email" : "sam44@gmail.com",
+    "email" : "Messi@gmail.com",
     "password" : "Sam2333@4j",
-    "username" : "sam44"
+    "username" : "Messi"
 }
+
+###LOGOUT
+POST http://localhost:8848/logout
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTAsImlhdCI6MTc1MDE2ODM2MywiZXhwIjoxNzUwMTcxOTYzfQ.rDf015FzDKZcrT8oLAZOnTLpyPLIzX_2bTfT_xmGZDk

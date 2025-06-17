@@ -17,10 +17,11 @@ model User {
   id             Int      @id @default(autoincrement())
   email          String   @unique
   password       String
-  username       String?
+  username       String   @unique
   emailVerified  DateTime?
   createdAt      DateTime @default(now())
   sessions       Session[]
+  logs           Log[]   
 }
 
 model Session {
@@ -30,4 +31,15 @@ model Session {
   createdAt    DateTime @default(now())
   expiresAt    DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  logs         Log[]   
+}
+
+model Log {
+  id           Int      @id @default(autoincrement())
+  userId       Int
+  u_token      String?   @unique
+  login_time   DateTime @default(now())
+  logout_time  DateTime? 
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session      Session?  @relation(fields: [u_token], references: [token], onDelete: SetNull)
 }
