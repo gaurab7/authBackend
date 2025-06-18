@@ -1,97 +1,98 @@
-import { jest } from '@jest/globals'
-import { regCredVerification, logCredVerification } from '../controllers/authController'
-import { PrismaClient } from '@prisma/client'
-import { registration, login } from '../services/authServices'
+// controller.test.mjs
+import { describe, beforeEach, afterAll, expect, jest, it } from '@jest/globals'
 
-//so that we can change the return value of findFirst and Unique for the two tests required
-const mockFindFirst = jest.fn()
-const mockFindUnique = jest.fn()
-
-//so that it doeent acccs real daatabase
- jest.mock('@prisma/client', () => {
+//  Required for ESM mocking
+jest.unstable_mockModule('@prisma/client', () => {
+  const mockFindFirst = jest.fn()
   return {
     PrismaClient: jest.fn().mockImplementation(() => ({
-      user: {
-        findFirst: mockFindFirst,
-        findUnique: mockFindUnique
-      },
+      user: { findFirst: mockFindFirst },
       $disconnect: jest.fn()
-    }))
+    })),
+    __esModule: true // important for ESM
   }
 })
-//so that real register/login function is not called
-jest.mock('../services/authServices.js', () => ({
-  login: jest.fn().mockResolvedValue("fake-token"),
-  registration: jest.fn().mockResolvedValue("fake-token")
+
+//  Mock ESM service module
+const mockLogin = jest.fn()
+const mockReg = jest.fn()
+
+jest.unstable_mockModule('../services/authServices.js', () => ({
+  login: mockLogin,
+  registration: mockReg,
+  __esModule: true
 }))
 
+// import everything AFTER mocks are set
+const { PrismaClient } = await import('@prisma/client')
+const authServices = await import('../services/authServices.js')
+const { regCredVerification, logCredVerification } = await import('../controllers/authController.js')
+
+// Setup shared mock
 let prisma
+let mockFindFirst
 
-describe('Credential Verification',  ()=>{  
-    //so that each new test is fresh
-    beforeEach(() => {
-         prisma = new PrismaClient()
-         mockFindFirst.mockReset()
-         mockFindUnique.mockReset()
-    })
+describe('Credential Verification', () => {
+  beforeEach(() => {
+    prisma = new PrismaClient()
+    mockFindFirst = prisma.user.findFirst
+    mockFindFirst.mockReset()
+    jest.clearAllMocks()
+  })
 
-    afterAll(async () => {
-        await prisma.$disconnect(); // Cleanup
-     })
+  afterAll(async () => {
+    await prisma.$disconnect()
+  })
 
-    it('should return 409 if the username or email are already in use', async ()=>{
-            mockFindFirst.mockResolvedValue({id:1})//find gives an obj if it exists
-            mockFindUnique.mockResolvedValue({id:1})
-            const req = { body: {"email" : "gaurab@gmail.com", "password" : "J41&fjgjawo","username" : "gaurab7" } }
-            const res = {
-                status: jest.fn().mockReturnThis(),//mockreturn makes status return res which in this context has value 400, jest.fn tracks when its called
-                json: jest.fn()
-            }
-            //it takes the emai and username from req, directly db is not accesed, instead whenever prisma is used/called, it uses the mock values we set above
-            await regCredVerification(req, res)
-            expect(res.status).toHaveBeenCalledWith(409)
-    })
-        
+  it('should return 409 if the username or email are already in use', async () => {
+    mockFindFirst.mockResolvedValue({ id: 1 })
+    const req = { body: { email: "gaurab@gmail.com", password: "pass", username: "gaurab7" } }
+    const res = { status: jest.fn().mockReturnThis(), json: jest.fn() }
 
-    it('should return 200 if the username & email are not already in use', async ()=>{
-      //if we dont do this the mock call returns value set before .i.e. gaurab@gmail.com and gaurab7, now it returns null which means no user with the given email and username
-            mockFindFirst.mockResolvedValue(null)
-            mockFindUnique.mockResolvedValue(null)
-            //using same input values for multiple tests is not good, kept runnig into errors as mocks might retain state, internal logic of controller may still asume in the 2nd test that the vlaue is still taken
-            const req = { body: {"email" : "gaura@gmail.com", "password" : "J41&fjwthl895gjawo","username" : "gaura" } }
-            const res = {
-                status: jest.fn().mockReturnThis(),
-                json: jest.fn()
-            }
-            await regCredVerification(req, res)
-            expect(res.status).toHaveBeenCalledWith(200)
-    })
+    await regCredVerification(req, res)
+    expect(res.status).toHaveBeenCalledWith(409)
+  })
 
+  it('should return 404 if the user doesn\'t exist', async () => {
+    mockFindFirst.mockResolvedValue(null)
+    const req = { body: { email: "nouser@gmail.com", password: "pass", username: "nouser" } }
+    const res = { status: jest.fn().mockReturnThis(), json: jest.fn() }
 
-     it('should return 404 if the user doesnt exist', async ()=>{
-            mockFindFirst.mockResolvedValue(null)//find gives an obj if it exists
-            const req = { body: {"email" : "gaur6@gmail.com", "password" : "9u23iijfH&fjgjawo","username" : "gaur6" } }
-            const res = {
-                status: jest.fn().mockReturnThis(),//mockreturn makes status return res which in this context has value 400, jest.fn tracks when its called
-                json: jest.fn()
-            }
-            //it takes the emai and username from req, directly db is not accesed, instead whenever prisma is used/called, it uses the mock values we set above
-            await logCredVerification(req, res)
-            expect(res.status).toHaveBeenCalledWith(404)
-    })
-        
-
-    it('should return 200 if the user exists', async ()=>{
-      //if we dont do this the mock call returns value set before .i.e. gaurab@gmail.com and gaurab7, now it returns null which means no user with the given email and username
-            mockFindFirst.mockResolvedValue({id:1})
-            //using same input values for multiple tests is not good, kept runnig into errors as mocks might retain state, internal logic of controller may still asume in the 2nd test that the vlaue is still taken
-            const req = { body: {"email" : "gau@gmail.com", "password" : "J41&twioua89849","username" : "gau" } }
-            const res = {
-                status: jest.fn().mockReturnThis(),
-                json: jest.fn()
-            }
-            await logCredVerification(req, res)
-            expect(res.status).toHaveBeenCalledWith(200)
-    })
+    await logCredVerification(req, res)
+    expect(res.status).toHaveBeenCalledWith(404)
+  })
 })
 
+describe('Cred Verification 200', () => {
+  beforeEach(() => {
+    prisma = new PrismaClient()
+    mockFindFirst = prisma.user.findFirst
+    mockFindFirst.mockReset()
+    jest.clearAllMocks()
+
+    mockLogin.mockResolvedValue("fake-token")
+    mockReg.mockResolvedValue("fake-token")
+  })
+
+  afterAll(async () => {
+    await prisma.$disconnect()
+  })
+
+  it('should return 200 if the user exists', async () => {
+    mockFindFirst.mockResolvedValue({ id: 1 })
+    const req = { body: { email: "exists@gmail.com", password: "pass", username: "exists" } }
+    const res = { status: jest.fn().mockReturnThis(), json: jest.fn() }
+
+    await logCredVerification(req, res)
+    expect(authServices.login).toHaveBeenCalled()
+  })
+
+  it('should return 200 if the username & email are not already in use', async () => {
+    mockFindFirst.mockResolvedValue(null)
+    const req = { body: { email: "new@gmail.com", password: "pass", username: "new" } }
+    const res = { status: jest.fn().mockReturnThis(), json: jest.fn() }
+
+    await regCredVerification(req, res)
+    expect(authServices.registration).toHaveBeenCalled()
+  })
+})

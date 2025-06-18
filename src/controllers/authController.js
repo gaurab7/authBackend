@@ -10,7 +10,7 @@ const prisma = new PrismaClient()
 export async function regCredVerification(req, res) {
     try{
         const { email, password, username} = req.body
-         if(await prisma.user.findUnique( {where: { email : email }}))
+         if(await prisma.user.findFirst( {where: { email : email }}))
              {
                     return res.status(409).json({ error: "Email already in use!"})
                   }
