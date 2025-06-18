@@ -31,3 +31,4 @@ Authentication backend built with Node.js, Express, and Prisma.
 
 - Token Refresh so that force logouts arent needed
 - Role Based Acces Control
+- Tests for onAccess, Logout and tokenverification
