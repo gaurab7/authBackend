@@ -18,7 +18,7 @@ Authentication backend built with Node.js, Express, and Prisma.
 - Node.js  
 - Express.js  
 - Prisma ORM  
-- PostgreSQL (or your preferred database)  
+- PostgreSQL
 - bcrypt for password hashing  
 - jsonwebtoken (JWT) for authentication tokens  
 - express-rate-limit for rate limiting  
